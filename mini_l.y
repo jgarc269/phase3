@@ -24,12 +24,27 @@
 %token AND OR SUB ADD MULT DIV MOD
 %token EQ NEQ LT GT LTE GTE ASSIGN NOT
 
-%left AND OR SUB ADD MULT DIV MOD
-%left EQ NEQ LT GT LTE GTE
+%right UMINUS
 
-%right ASSIGN NOT
+%left MULT
+%left DIV
+%left MOD
+%left ADD 
+%left SUB
+%left LT
+%left LTE 
+%left GT 
+%left GTE
+%left EQ 
+%left NEQ 
 
-%nonassoc UMINUS
+%right NOT
+
+%left AND
+%left OR 
+
+%right ASSIGN
+
 
 %%
 
