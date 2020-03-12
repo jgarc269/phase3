@@ -1,18 +1,43 @@
 %{
  #include <stdio.h>
  #include <stdlib.h>
+
  void yyerror(const char *msg);
  extern int currLine;
  extern int currPos;
  FILE * yyin;
+
+ std::vector<std::string> statement_vec;
+ std::vector<std::string> operation_vec;
+ std::vector<std::string> expression_vec;
+ std::vector<std::string> declaration_vec;
+ std::vector<std::string> function_vec;
 %}
 
 %union{
   char* ival;
   double dval;
+
+    struct Statement_val
+    {
+	std::string code;
+    }stat;
+
+    struct Expression_val
+    {
+	std::string code;
+	std::string result_id;
+    }expr;
+
 }
 %error-verbose
 %start prog_start
+
+
+%type <stat> ElseStatement Statement Statement1 Statement2 Statement3 Statement4 Statement5 Statement6 Statement7 Statement8 Statement9 Statement_loop
+%type <expr> Declaration Declartation_loop Function Ident_loop Bool_Expr Relation_And_Expr
+%type <expr> Relation_Expr Relation_Expr_loop Comp Expression Expression_loop
+%type <expr> Multiplicative_Expr Term Var Var_loop Ident
 
 %token <ival> IDENT
 %token <dval> NUMBER
@@ -51,8 +76,14 @@
 /* Grammer Rules */
 
 
-prog_start:	%empty {printf("prog_start -> EPSILON\n");}
-		| Function prog_start {printf("prog_start -> Function prog_start\n");}
+prog_start:	%empty
+{
+	if(function_vec.size() == 0)
+	{
+	    char temp[50];
+	    printf(temp, 50, "main not found");
+}
+		| Function prog_start
 		;
 
 Function: 		FUNCTION Ident SEMICOLON BEGIN_PARAMS Declaration_loop END_PARAMS BEGIN_LOCALS Declaration_loop END_LOCALS BEGIN_BODY Statement_loop END_BODY{printf("Function -> FUNCTION Ident SEMICOLON BEGIN_PARAMS Declaration_loop END_PARAMS BEGIN_LOCALS Declaration_loop END_LOCALS BEGIN_BODY Statement_loop END_BODY\n");};
