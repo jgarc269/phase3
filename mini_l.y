@@ -1,6 +1,7 @@
 %{
  #include <stdio.h>
  #include <stdlib.h>
+ #include <string>
 
  void yyerror(const char *msg);
  extern int currLine;
@@ -12,6 +13,8 @@
  std::vector<std::string> expression_vec;
  std::vector<std::string> declaration_vec;
  std::vector<std::string> function_vec;
+
+ std::string new_label();
 %}
 
 %union{
@@ -82,132 +85,263 @@ prog_start:	%empty
 	{
 	    char temp[50];
 	    printf(temp, 50, "main not found");
+	}
 }
-		| Function prog_start
-		;
+| Function prog_start {};
 
-Function: 		FUNCTION Ident SEMICOLON BEGIN_PARAMS Declaration_loop END_PARAMS BEGIN_LOCALS Declaration_loop END_LOCALS BEGIN_BODY Statement_loop END_BODY{printf("Function -> FUNCTION Ident SEMICOLON BEGIN_PARAMS Declaration_loop END_PARAMS BEGIN_LOCALS Declaration_loop END_LOCALS BEGIN_BODY Statement_loop END_BODY\n");};
-
-Declaration_loop: 	Declaration SEMICOLON Declaration_loop {printf("Declaration_loop -> Declaration SEMICOLON Declaration_loop\n");}
-					| %empty {printf("Declaration_loop -> EPSILON\n");}
+Function: 		
+FUNCTION Ident SEMICOLON BEGIN_PARAMS Declaration_loop END_PARAMS BEGIN_LOCALS Declaration_loop END_LOCALS BEGIN_BODY Statement_loop END_BODY
+{
+	for(int i = 0; i < function_vec.size(); i++)
+	{
+		
+	}
+};
+Declaration_loop: 	Declaration SEMICOLON Declaration_loop ;}
+					| %empty 
 					;
 
-Declaration:	Ident_loop COLON INTEGER {printf("Declaration -> Ident_loop COLON INTEGER\n");}
+Declaration:	Ident_loop COLON INTEGER 
 				| Ident_loop COLON ARRAY L_SQUARE_BRACKET NUMBER R_SQUARE_BRACKET OF INTEGER {printf("Declaration -> Ident_loop COLON ARRAY L_SQUARE_BRACKET NUMBER %d R_SQUARE_BRACKET OF INTEGER\n", $5);}
 				;
 
-Ident_loop: 	Ident {printf("Ident_loop -> Ident \n");}
-				| Ident COMMA Ident_loop {printf("Ident_loop -> Ident COMMA Ident_loop\n");}
+Ident_loop: 	Ident
+				| Ident COMMA Ident_loop 
 				;
 
-Statement: 	Statement1 {printf("Statement -> Statement1\n");}
-			| Statement2 {printf("Statement -> Statement2\n");}
-			| Statement3 {printf("Statement -> Statement3\n");}
-			| Statement4 {printf("Statement -> Statement4\n");}
-			| Statement5 {printf("Statement -> Statement5\n");}
-			| Statement6 {printf("Statement -> Statement6\n");}
-			| Statement7 {printf("Statement -> Statement7\n");}
-			| Statement8 {printf("Statement -> Statement8\n");}
-			| Statement9 {printf("Statement -> Statement9\n");}
-			;
+Statement: 	
+Statement1
+{
+	$$.code = $1.code;
+}
+| Statement2
+{
+	$$.code = $1.code;
+}
+| Statement3 
+{
+	$$.code = $1.code;
+}
+| Statement4 
+{
+	$$.code = $1.code;
+}
+| Statement5 
+{
+	$$.code = $1.code;
+}
+| Statement6 
+{
+	$$.code = $1.code;
+}
+| Statement7 
+{
+	$$.code = $1.code;
+}
+| Statement8 
+{
+	$$.code = $1.code;
+}
+| Statement9 
+{
+	$$.code = $1.code;
+};
 
-Statement1:  	Var ASSIGN Expression {printf("Statement1 -> Var ASSIGN Expression\n");}
+Statement1:  	Var ASSIGN Expression 
 				;
 		
-Statement2: 	IF Bool_Expr THEN Statement_loop ElseStatement ENDIF {printf("Statement -> IF Bool_Expr THEN Statement_loop ElseStatement ENDIF\n");}
+Statement2: 	
+IF Bool_Expr THEN Statement_loop ElseStatement ENDIF 
+{
+	std::string l = new_label();
+	std::string m = new_label();
+
+	stringstream oss;
+
+	oss << $2.code;
+	oss << "?:=" << $2.result_id << ";" << l << std::endl;
+	oss << ":=" << m << std::endl;
+	oss << ":" << l << std::endl;
+	oss << $4.code;
+	oss << ":" << m << std::endl;
+	$$.code = oss.str();
+};
+
+Statement3: 	
+WHILE Bool_Expr BEGINLOOP Statement_loop ENDLOOP 
+{
+
+};
+
+Statement4:		DO BEGINLOOP Statement_loop ENDLOOP WHILE Bool_Expr 
 				;
 
-Statement3: 	WHILE Bool_Expr BEGINLOOP Statement_loop ENDLOOP {printf("Statement -> WHILE Bool_Expr BEGINLOOP Statement_loop SEMICOLON ENDLOOP\n");}
+Statement5: 	FOR Var ASSIGN NUMBER SEMICOLON Bool_Expr SEMICOLON Var ASSIGN Expression BEGINLOOP Statement_loop ENDLOOP 
 				;
 
-Statement4:		DO BEGINLOOP Statement_loop ENDLOOP WHILE Bool_Expr {printf("Statement -> DO BEGINLOOP Statement_loop SEMICOLON ENDLOOP WHILE Bool_Expr\n");}
+Statement6: 	READ Var_loop 
 				;
 
-Statement5: 	FOR Var ASSIGN NUMBER SEMICOLON Bool_Expr SEMICOLON Var ASSIGN Expression BEGINLOOP Statement_loop ENDLOOP {printf("Statement -> FOR Var ASSIGN NUMBER SEMICOLON Bool_Expr SEMICOLON Var ASSIGN Expression BEGINLOOP Statement_loop SEMICOLON ENDLOOP\n");}
+Statement7: 	WRITE Var_loop 
 				;
 
-Statement6: 	READ Var_loop {printf("Statement -> READ Var_loop\n");}
+Statement8: 	CONTINUE 
 				;
 
-Statement7: 	WRITE Var_loop {printf("Statement -> WRITE Var_loop\n");}
+Statement9: 	RETURN Expression 
 				;
 
-Statement8: 	CONTINUE {printf("Statement -> CONTINUE\n");}
-				;
-
-Statement9: 	RETURN Expression {printf("Statement -> Expression\n");}
-				;
-
-Statement_loop: 	Statement SEMICOLON Statement_loop {printf("Statement_loop -> Statement SEMICOLON Statement_loop\n");}
-					| Statement SEMICOLON {printf("Statement_loop -> Statement SEMICOLON\n");}
+Statement_loop: 	Statement SEMICOLON Statement_loop 
+					| Statement SEMICOLON 
 					;
 
-ElseStatement: 		ELSE Statement_loop {printf("ElseStatement -> ELSE Statement_loop\n");}
-					| %empty {printf("ElseStatement -> EPSILON\n");}					
+ElseStatement: 		ELSE Statement_loop
+					| %empty 
 					;
 
-Bool_Expr:		Relation_And_Expr {printf("Bool_Expr -> Relation_And_Expr\n");}
-					  | Relation_Expr OR Bool_Expr {printf("Bool_Expr -> Relation_Expr OR Bool_Expr\n");}
+Bool_Expr:		Relation_And_Expr
+{
+	stringstream oss;
+	$1.code = oss.str();
+	$1.result_id = oss.str();
+}
+					  | Relation_Expr OR Bool_Expr 
 					  ; 
 
-Relation_And_Expr:		Relation_Expr {printf("Relation_And_Expr -> Relation_Expr\n");}
-						| Relation_Expr AND Relation_And_Expr  {printf("Relation_And_Expr -> Relation_Expr AND Relation_And_Expr\n");}
+Relation_And_Expr:		Relation_Expr 
+{
+	stringstream oss;
+	$1.code = oss.str();
+	$1.result_id = oss.str();
+}
+						| Relation_Expr AND Relation_And_Expr 
 						;						
 
 
-Relation_Expr:		NOT Relation_Expr_loop {printf("Relation_Expr -> NOT Relation_Expr_loop\n");}
-					| Relation_Expr_loop {printf("Relation_Expr -> Relation_Expr_loop\n");}
+Relation_Expr:		
+NOT Relation_Expr_loop 
+{
+	stringstream oss;
+	$1.code = oss.str();
+	$1.result_id = oss.str();
+}
+					| Relation_Expr_loop 
 					;
 
-Relation_Expr_loop: 	Expression Comp Expression {printf("Relation_Expr_loop -> Expression Comp Expression\n");}
-                 		| TRUE	{printf("Relation_Expr_loop -> TRUE\n");}
-				| FALSE {printf("Relation_Expr_loop -> FALSE\n");}
-				| L_PAREN Bool_Expr R_PAREN {printf("Relation_Expr_loop -> L_PAREN Bool_Expr R_PAREN\n");}
-				;
+Relation_Expr_loop: 	
+Expression Comp Expression 
+{
+
+}                 		
+| TRUE
+{
+	std::string s = "1";
+    $$.result_id = s;
+    $$.code = new string();
+}	
+| FALSE
+{
+	std::string s = "0";
+    $$.result_id = s;
+    $$.code = new string();
+} 
+| L_PAREN Bool_Expr R_PAREN
+{
+
+};
 		
-Comp: 		EQ {printf("Comp -> EQ\n");}
-			| NEQ {printf("Comp -> NEQ\n");}
-			| LT {printf("Comp -> LT\n");}
-			| GT {printf("Comp -> GT\n");}
-			| LTE {printf("Comp -> LTE\n");}
-			| GTE {printf("Comp -> GTE\n");}
-			;
+Comp: 		
+EQ 
+{
+	std::string s "==";
+	$$.result_id = s;
+	$$.code = new string();
+}
+| NEQ
+{
+	std::string s "!=";
+	$$.result_id = s;
+	$$.code = new string();
+} 
+| LT
+{
+	std::string s "<";
+	$$.result_id = s;
+	$$.code = new string();
+} 
+| GT 
+{
+	std::string s ">";
+	$$.result_id = s;
+	$$.code = new string();
+}
+| LTE 
+{
+	std::string s "<=";
+	$$.result_id = s;
+	$$.code = new string();
+}
+| GTE 
+{
+	std::string s "=>";
+	$$.result_id = s;
+	$$.code = new string();
+};
 
-Expression: 		 Multiplicative_Expr {printf("Expression -> Multiplicative_Expr\n");}
-					| Multiplicative_Expr SUB Expression {printf("Expression -> Multiplicative_Expr SUB Expression\n");}
-					| Multiplicative_Expr ADD Expression {printf("Expression -> Multiplicative_Expr ADD Expression\n");}
+Expression: 		 Multiplicative_Expr 
+					| Multiplicative_Expr SUB Expression 
+					| Multiplicative_Expr ADD Expression 
 					;
 
-Expression_loop: 	Expression COMMA Expression_loop {printf("Expression -> COMMA Expression\n");}
-					| Expression {printf("Expression_loop -> Expression\n");}
-					| %empty {printf("Expression_loop -> EPSILON\n");}
-					
+Expression_loop: 	Expression COMMA Expression_loop 
+					| Expression 
+					| %empty 
+					;
 
-Multiplicative_Expr:		Term  {printf("Multiplicative_Expr -> Term\n");}
-							| Term MOD Multiplicative_Expr {printf("Multiplicative_Expr -> Term MOD Term\n");}
-							| Term DIV Multiplicative_Expr {printf("Multiplicative_Expr -> Term DIV Term\n");}
-							| Term MULT Multiplicative_Expr {printf("Multiplicative_Expr-> Term MULT Term\n");} 
+Multiplicative_Expr:		Term  
+							| Term MOD Multiplicative_Expr 
+							| Term DIV Multiplicative_Expr 
+							| Term MULT Multiplicative_Expr 
 							;
 
-Term:		 Var {printf("Term -> Var\n");}
-			| NUMBER {printf("Term -> NUMBER %d\n", $1);}
-			| SUB Var {printf("Term -> SUB Var\n");}
-			| SUB NUMBER {printf("Term -> SUB NUMBER %d\n", $2);}
-			| L_PAREN Expression R_PAREN {printf("Term -> L_PAREN Expression R_PAREN\n");}
-			| SUB L_PAREN Expression R_PAREN {printf("Term -> SUB L_PAREN Expression R_PAREN\n");}
-			| Ident L_PAREN Expression_loop R_PAREN {printf("Term -> Ident L_PAREN Expression R_PAREN\n");}
+Term:		 
+Var 
+| NUMBER 
+{
+
+}
+| SUB Var 
+{
+
+}
+| SUB NUMBER 
+{
+
+}
+| L_PAREN Expression R_PAREN 
+{
+	$$.code = $1.result_id;
+    $$.result_id = $1.result_id;
+}
+| SUB L_PAREN Expression R_PAREN 
+| Ident L_PAREN Expression_loop R_PAREN 
 			;
 
-Var:		  Ident {printf("Var -> Ident\n");}
-				| Ident L_SQUARE_BRACKET Expression R_SQUARE_BRACKET {printf("Var -> Ident L_SQUARE_BRACKET Expression R_SQUARE_BRACKET\n");}
+Var:		  Ident 
+				| Ident L_SQUARE_BRACKET Expression R_SQUARE_BRACKET 
 				;
 
-Var_loop: 		Var {printf("Var_loop -> Var\n");}
-				| Var COMMA Var_loop {printf("Var_loop -> Var COMMA Var_loop\n");}
+Var_loop: 		Var 
+				| Var COMMA Var_loop 
 				;
 
-Ident:      IDENT
-			{printf("Ident -> IDENT %s \n", $1);};
+Ident:      
+IDENT
+{
+	stringstream oss;
+	$1.result_id = oss.str();
+	$$.code = oss.str();
+}			
 %%
 
 void yyerror(const char* msg)
@@ -217,4 +351,10 @@ void yyerror(const char* msg)
 
   printf("ERROR: %s at symbol \"%s\" on line %d\n", msg, yytext, currLine);
   exit(1);
+}
+
+std::string new_label()
+{
+	static int num = 0;
+	return 'L' + std::to_string(num++); 
 }
